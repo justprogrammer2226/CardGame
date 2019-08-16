@@ -5,8 +5,11 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Card", menuName = "Card")]
 public class Card : ScriptableObject
 {
-    [SerializeField] private Sprite _sprite;
-    public Sprite Sprite => _sprite;
+    [SerializeField] private Sprite _frontSprite;
+    public Sprite FrontSprite => _frontSprite;
+
+    [SerializeField] private Sprite _backSprite;
+    public Sprite BackSprite => _backSprite;
 
     [SerializeField] private CardTypes _type;
     public CardTypes Type => _type;
