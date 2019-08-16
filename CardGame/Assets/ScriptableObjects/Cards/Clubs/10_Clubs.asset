@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59e055d907102054d870466d818080c4, type: 3}
   m_Name: 10_Clubs
   m_EditorClassIdentifier: 
-  _sprite: {fileID: 0}
+  _frontSprite: {fileID: 21300000, guid: aff31be57dbf18642892e506afcc985e, type: 3}
+  _backSprite: {fileID: 0}
   _type: 4
   _suit: 3

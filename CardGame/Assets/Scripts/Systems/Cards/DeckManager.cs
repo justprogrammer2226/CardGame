@@ -6,6 +6,10 @@ using System.Linq;
 public class DeckManager : MonoBehaviour
 {
     [SerializeField] private List<Card> cards;
+    [SerializeField] private Transform deckSpawnPoint;
+    [SerializeField] private Deck currentDeck;
+
+    [SerializeField] private GameObject cardPrefab;
 
     private void Awake()
     {
@@ -93,10 +97,19 @@ public class DeckManager : MonoBehaviour
         }
         #endregion
         #endregion
+
+        SpawnDeck();
     }
 
-    public List<Card> GetNewDeck()
+    public void SpawnDeck()
     {
-        return new List<Card>(cards);
+        currentDeck = new Deck(cards);
+
+        foreach(Card card in currentDeck.GetCards())
+        {
+            CardDisplay cardDisplay = Instantiate(cardPrefab, deckSpawnPoint, true).GetComponent<CardDisplay>();
+            cardDisplay.card = card;
+            cardDisplay.UpdateUI();
+        }
     }
 }

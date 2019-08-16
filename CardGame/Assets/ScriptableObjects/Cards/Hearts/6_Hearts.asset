@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59e055d907102054d870466d818080c4, type: 3}
   m_Name: 6_Hearts
   m_EditorClassIdentifier: 
-  _sprite: {fileID: 0}
+  _frontSprite: {fileID: 21300000, guid: ab91e117d1a6cb94eb0712fd028ebb35, type: 3}
+  _backSprite: {fileID: 0}
   _type: 0
   _suit: 1
