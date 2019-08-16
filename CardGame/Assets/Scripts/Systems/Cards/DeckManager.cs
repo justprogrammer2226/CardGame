@@ -2,14 +2,27 @@
 using UnityEngine;
 using System;
 using System.Linq;
+using System.Collections;
 
 public class DeckManager : MonoBehaviour
 {
-    [SerializeField] private List<Card> cards;
-    [SerializeField] private Transform deckSpawnPoint;
-    [SerializeField] private Deck currentDeck;
+    [Header("Main settings")]
+    public GameObject cardPrefab;
+    public Transform deckSpawnPoint;
+    public Transform opponentCardsPosition;
+    public Transform playerCardsPosition;
+    [Tooltip("Length of tline on which player and opponent cards will be located")]
+    [Range(0, 10)] public int lineLength;
 
-    [SerializeField] private GameObject cardPrefab;
+    [Header("Movement settings")]
+    public float movementDuration;
+    public AnimationCurve movementCurve;
+
+    [Header("Debug")]
+    [SerializeField] private List<Card> cards;
+    [SerializeField] private Deck currentDeck;
+    [SerializeField] private List<CardDisplay> cardDisplays;
+    [SerializeField] private CardDisplay trumpCardDisplay;
 
     private void Awake()
     {
@@ -98,18 +111,98 @@ public class DeckManager : MonoBehaviour
         #endregion
         #endregion
 
-        SpawnDeck();
-    }
-
-    public void SpawnDeck()
-    {
         currentDeck = new Deck(cards);
 
-        foreach(Card card in currentDeck.GetCards())
+        SpawnDeck();
+        StartCoroutine(GiveCardsToPlayer());
+        StartCoroutine(GiveCardsToOpponent());
+    }
+
+    private void SpawnDeck()
+    {
+        // Spawn trump card
+        trumpCardDisplay = Instantiate(cardPrefab, deckSpawnPoint.position, Quaternion.identity, deckSpawnPoint).GetComponent<CardDisplay>();
+        trumpCardDisplay.card = currentDeck.GetTrumpCard();
+        trumpCardDisplay.UpdateUI();
+        trumpCardDisplay.transform.localPosition = new Vector3(0.3f, 0, 0);
+        trumpCardDisplay.transform.localEulerAngles = new Vector3(0, 0, 90);
+        
+        // Spawn other card
+        foreach (Card card in currentDeck.GetCards())
         {
-            CardDisplay cardDisplay = Instantiate(cardPrefab, deckSpawnPoint, true).GetComponent<CardDisplay>();
+            CardDisplay cardDisplay = Instantiate(cardPrefab, deckSpawnPoint.position, Quaternion.identity, deckSpawnPoint).GetComponent<CardDisplay>();
             cardDisplay.card = card;
             cardDisplay.UpdateUI();
+            cardDisplay.transform.localEulerAngles = new Vector3(0, 180, 0);
+            cardDisplays.Add(cardDisplay);
+        }
+    }
+
+    private IEnumerator GiveCardsToPlayer()
+    {
+        List<Vector3> points = GetPointsForCards(playerCardsPosition.position, lineLength, 6);
+
+        for (int i = 0; i < points.Count; i++)
+        {
+            Card takedCard = currentDeck.TakeCard();
+            CardDisplay cardDisplay = cardDisplays.Where(_ => _.card == takedCard).Single();
+            cardDisplay.SetOrderInLayer(i);
+            StartCoroutine(RotateCard(cardDisplay, new Vector3(0, 0, 0)));
+            StartCoroutine(MoveCard(cardDisplay, points[i]));
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private IEnumerator GiveCardsToOpponent()
+    {
+        List<Vector3> points = GetPointsForCards(opponentCardsPosition.position, lineLength, 6);
+
+        for (int i = 0; i < points.Count; i++)
+        {
+            Card takedCard = currentDeck.TakeCard();
+            CardDisplay cardDisplay = cardDisplays.Where(_ => _.card == takedCard).Single();
+            cardDisplay.SetOrderInLayer(i);
+            StartCoroutine(RotateCard(cardDisplay, new Vector3(0, 180, 0)));
+            StartCoroutine(MoveCard(cardDisplay, points[i]));
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private List<Vector3> GetPointsForCards(Vector3 cardsPosition, int length, int numberOfCards)
+    {
+        List<Vector3> points = new List<Vector3>();
+
+        float step = (float)length / numberOfCards;
+        float temp = cardsPosition.x - (float)length / 2 + step / 2;
+
+        for (int i = 0; i < numberOfCards; i++)
+        {
+            points.Add(new Vector3(cardsPosition.x + temp, cardsPosition.y, cardsPosition.z));
+            temp += step;
+        }
+
+        return points;
+    }
+
+    private IEnumerator MoveCard(CardDisplay cardDisplay, Vector3 endPosition)
+    {
+        Vector3 startPosition = cardDisplay.transform.position;
+        float timer = 0.0f;
+        while (timer < movementDuration)
+        {
+            timer += Time.deltaTime;
+            cardDisplay.transform.position = Vector3.Lerp(startPosition, endPosition, movementCurve.Evaluate(timer / movementDuration));
+            yield return null;
+        }
+        cardDisplay.transform.position = endPosition;
+    }
+
+    private IEnumerator RotateCard(CardDisplay cardDisplay, Vector3 targetRotation)
+    {
+        while (cardDisplay.transform.rotation != Quaternion.Euler(targetRotation))
+        {
+            cardDisplay.transform.rotation = Quaternion.RotateTowards(cardDisplay.transform.rotation, Quaternion.Euler(targetRotation), 200 * Time.deltaTime);
+            yield return null;
         }
     }
 }

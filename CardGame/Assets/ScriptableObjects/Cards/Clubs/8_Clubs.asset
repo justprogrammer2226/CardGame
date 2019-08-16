@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: 8_Clubs
   m_EditorClassIdentifier: 
   _frontSprite: {fileID: 21300000, guid: 593edf9838e1de640a0988271c793a11, type: 3}
-  _backSprite: {fileID: 0}
+  _backSprite: {fileID: 21300000, guid: 26c581555c28dbe46912ab5c5e0a3706, type: 3}
   _type: 2
   _suit: 3

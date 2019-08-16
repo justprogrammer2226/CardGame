@@ -17,4 +17,10 @@ class CardDisplay : MonoBehaviour
         frontSide.sprite = card.FrontSprite;
         backSide.sprite = card.BackSprite;
     }
+
+    public void SetOrderInLayer(int order)
+    {
+        frontSide.sortingOrder = order;
+        backSide.sortingOrder = order;
+    }
 }

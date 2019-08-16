@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Queen_Hearts
   m_EditorClassIdentifier: 
   _frontSprite: {fileID: 21300000, guid: 37c577617b8b3c14b986687910040347, type: 3}
-  _backSprite: {fileID: 0}
+  _backSprite: {fileID: 21300000, guid: 26c581555c28dbe46912ab5c5e0a3706, type: 3}
   _type: 6
   _suit: 1

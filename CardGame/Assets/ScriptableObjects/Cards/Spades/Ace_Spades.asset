@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Ace_Spades
   m_EditorClassIdentifier: 
   _frontSprite: {fileID: 21300000, guid: 78dcbf5b0f98584429343fdedec6e817, type: 3}
-  _backSprite: {fileID: 0}
+  _backSprite: {fileID: 21300000, guid: 26c581555c28dbe46912ab5c5e0a3706, type: 3}
   _type: 8
   _suit: 0

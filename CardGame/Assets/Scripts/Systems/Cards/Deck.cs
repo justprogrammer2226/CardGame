@@ -29,11 +29,21 @@ public class Deck
 
     public CardSuits GetTrump()
     {
-        return trumpCard.Suit;
+        return GetTrumpCard().Suit;
+    }
+
+    public Card GetTrumpCard()
+    {
+        return trumpCard;
     }
 
     public List<Card> GetCards()
     {
         return deck.ToList();
+    }
+
+    public Card TakeCard()
+    {
+        return deck.Pop();
     }
 }
