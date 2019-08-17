@@ -6,6 +6,8 @@ using System.Collections;
 
 public class DeckManager : MonoBehaviour
 {
+    public static DeckManager instance;
+
     [Header("Main settings")]
     public GameObject cardPrefab;
     public Transform deckSpawnPoint;
@@ -26,6 +28,8 @@ public class DeckManager : MonoBehaviour
 
     private void Awake()
     {
+        instance = this;
+
         #region Checks for the correctness of the filled cards
 
         if (cards.Count != 36)
@@ -147,8 +151,8 @@ public class DeckManager : MonoBehaviour
             Card takedCard = currentDeck.TakeCard();
             CardDisplay cardDisplay = cardDisplays.Where(_ => _.card == takedCard).Single();
             cardDisplay.SetOrderInLayer(i);
-            StartCoroutine(RotateCard(cardDisplay, new Vector3(0, 0, 0)));
-            StartCoroutine(MoveCard(cardDisplay, points[i]));
+            SmoothRotate(cardDisplay, new Vector3(0, 0, 0));
+            SmoothMove(cardDisplay, points[i]);
             yield return new WaitForSeconds(0.1f);
         }
     }
@@ -162,8 +166,8 @@ public class DeckManager : MonoBehaviour
             Card takedCard = currentDeck.TakeCard();
             CardDisplay cardDisplay = cardDisplays.Where(_ => _.card == takedCard).Single();
             cardDisplay.SetOrderInLayer(i);
-            StartCoroutine(RotateCard(cardDisplay, new Vector3(0, 180, 0)));
-            StartCoroutine(MoveCard(cardDisplay, points[i]));
+            SmoothRotate(cardDisplay, new Vector3(0, 180, 0));
+            SmoothMove(cardDisplay, points[i]);
             yield return new WaitForSeconds(0.1f);
         }
     }
@@ -184,6 +188,11 @@ public class DeckManager : MonoBehaviour
         return points;
     }
 
+    public void SmoothMove(CardDisplay cardDisplay, Vector3 endPosition)
+    {
+        StartCoroutine(MoveCard(cardDisplay, endPosition));
+    }
+
     private IEnumerator MoveCard(CardDisplay cardDisplay, Vector3 endPosition)
     {
         Vector3 startPosition = cardDisplay.transform.position;
@@ -195,6 +204,11 @@ public class DeckManager : MonoBehaviour
             yield return null;
         }
         cardDisplay.transform.position = endPosition;
+    }
+
+    public void SmoothRotate(CardDisplay cardDisplay, Vector3 endPosition)
+    {
+        StartCoroutine(RotateCard(cardDisplay, endPosition));
     }
 
     private IEnumerator RotateCard(CardDisplay cardDisplay, Vector3 targetRotation)

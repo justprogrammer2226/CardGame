@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-class CardDisplay : MonoBehaviour
+public class CardDisplay : MonoBehaviour
 {
     public Card card;
 
