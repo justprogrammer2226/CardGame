@@ -1,25 +1,65 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CardSlot : MonoBehaviour
 {
-    [SerializeField] private bool _isAvailability;
-    public bool IsAvailability
+    [SerializeField] private CardDisplay _cardDisplay;
+    public CardDisplay CardDisplay
     {
-        get => _isAvailability;
-        set => _isAvailability = value;
+        get => _cardDisplay;
+        set
+        {
+            if (CardSlotsHandler.instance.numberOfClosedSlots == CardSlotsHandler.instance.GetIndexByCardSlot(this))
+            {
+                if (_cardDisplay == null && value != null)
+                {
+                    if (Parent == null)
+                    {
+                        _cardDisplay = value;
+                        _cardDisplay.SetOrderInLayer(-1);
+                    }
+                    else if (Parent != null && Parent.CardDisplay != null && Parent.CardDisplay.card.Suit == value.card.Suit && Parent.CardDisplay.card.Type < value.card.Type)
+                    {
+                        _cardDisplay = value;
+                        _cardDisplay.SetOrderInLayer(0);
+                    }
+                }
+                else if (value == null)
+                {
+                    _cardDisplay = value;
+                }
+            }
+        }
     }
 
-    [SerializeField] private CardSlotTypes _cardSlotType;
-    public CardSlotTypes CardSlotType
+    [SerializeField] private CardSlot _parent;
+    public CardSlot Parent
     {
-        get => _cardSlotType;
+        get => _parent;
     }
 
-    [SerializeField] private CardSlot _child;
-    public CardSlot Child
+    public bool CanPutCard(CardDisplay cardDisplay)
     {
-        get => _child;
+        bool result = false;
+
+        if (CardSlotsHandler.instance.numberOfClosedSlots == CardSlotsHandler.instance.GetIndexByCardSlot(this))
+        {
+            if (_cardDisplay == null && cardDisplay != null)
+            {
+                if (Parent == null)
+                {
+                    result = true;
+                }
+                else if (Parent != null && Parent.CardDisplay != null && Parent.CardDisplay.card.Suit == cardDisplay.card.Suit && Parent.CardDisplay.card.Type < cardDisplay.card.Type)
+                {
+                    result = true;
+                }
+            }
+            else if (cardDisplay == null)
+            {
+                result = true;
+            }
+        }
+
+        return result;
     }
 }

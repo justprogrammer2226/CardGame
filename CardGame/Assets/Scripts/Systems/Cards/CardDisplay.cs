@@ -15,7 +15,7 @@ public class CardDisplay : MonoBehaviour
     public void UpdateUI()
     {
         frontSide.sprite = card.FrontSprite;
-        backSide.sprite = card.BackSprite;
+        backSide.sprite = SettingsManager.instance.GetBackendSprite();
     }
 
     public void SetOrderInLayer(int order)

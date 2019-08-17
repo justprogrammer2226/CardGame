@@ -28,7 +28,7 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
 
     public void OnDrag(PointerEventData eventData)
     {
-        if(!onSlot)
+        if(!onSlot && DeckManager.instance.IsPlayerCard(currentCardDisplay))
         {
             currentTouchCoord = Camera.main.ScreenToWorldPoint(eventData.position);
             transform.position += currentTouchCoord - lastTouchCoord;
@@ -37,20 +37,13 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        if(nearestCardSlot != null && nearestCardSlot.IsAvailability)
+        if(nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
         {
-            nearestCardSlot.IsAvailability = false;
-            if(nearestCardSlot.Child != null)
-            {
-                nearestCardSlot.Child.IsAvailability = true;
-                currentCardDisplay.SetOrderInLayer(-1);
-            }
-            else
-            {
-                currentCardDisplay.SetOrderInLayer(0);
-            }
+            nearestCardSlot.CardDisplay = currentCardDisplay;
             onSlot = true;
+            CardSlotsHandler.instance.numberOfClosedSlots++;
             DeckManager.instance.SmoothMove(currentCardDisplay, nearestCardSlot.transform.position);
+            DeckManager.instance.DeleteFromPlayer(currentCardDisplay);
         }
         else
         {
@@ -58,9 +51,9 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.tag == "CardSlot" && collision.GetComponent<CardSlot>().IsAvailability)
+        if (collision.tag == "CardSlot" && collision.GetComponent<CardSlot>().CanPutCard(currentCardDisplay))
         {
             nearestCardSlot = collision.GetComponent<CardSlot>();
         }
