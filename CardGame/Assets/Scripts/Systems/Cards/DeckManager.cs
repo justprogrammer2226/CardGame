@@ -172,6 +172,7 @@ public class DeckManager : MonoBehaviour
             CardDisplay cardDisplay = currentDeck.TakeCard();
             TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 0, 0));
             playerCardsDisplays.Add(cardDisplay);
+            Debug.Log("REBUILD FOR PLAYER");
             RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
             yield return new WaitForSeconds(0.1f);
         }
@@ -252,7 +253,7 @@ public class DeckManager : MonoBehaviour
         for (int i = 0; i < points.Count; i++)
         {
             cardDisplays[i].SetOrderInLayer(i);
-            TransformHelper.SmoothMove(cardDisplays[i].transform, points[i]);
+            TransformHelper.SmoothMove(cardDisplays[i].transform, new Vector3(points[i].x, points[i].y, - (points[i].z + i / 10f)));
         }
     }
 

@@ -41,6 +41,7 @@ public class TransformHelper : MonoBehaviour
     {
         Vector3 startPosition = transform.position;
         float timer = 0.0f;
+        Debug.Log("endPosition.z: " + endPosition.z);
         while (timer < movementDuration)
         {
             timer += Time.deltaTime;

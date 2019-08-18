@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59e055d907102054d870466d818080c4, type: 3}
   m_Name: 9_Diamonds
   m_EditorClassIdentifier: 
-  _frontSprite: {fileID: 21300000, guid: 0ffebf2e7d51ec64fac4fa176301d33e, type: 3}
+  _frontSprite: {fileID: 21300000, guid: 35834ba9c2d05e14187a3da8a592aacf, type: 3}
   _backSprite: {fileID: 21300000, guid: 26c581555c28dbe46912ab5c5e0a3706, type: 3}
   _type: 3
   _suit: 2
