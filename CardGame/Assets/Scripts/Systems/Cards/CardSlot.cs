@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class CardSlot : MonoBehaviour
 {
@@ -12,17 +13,23 @@ public class CardSlot : MonoBehaviour
             {
                 if (value == null)
                 {
+                    _cardDisplay.OnSlot = false;
                     _cardDisplay = value;
+                    OnSlotOpen?.Invoke();
                 }
                 else if (Parent == null)
                 {
                     _cardDisplay = value;
+                    _cardDisplay.OnSlot = true;
                     _cardDisplay.SetOrderInLayer(-1);
+                    OnSlotClose?.Invoke();
                 }
                 else if (Parent != null)
                 {
                     _cardDisplay = value;
+                    _cardDisplay.OnSlot = true;
                     _cardDisplay.SetOrderInLayer(0);
+                    OnSlotClose?.Invoke();
                 }
             }
         }
@@ -46,12 +53,10 @@ public class CardSlot : MonoBehaviour
         {
             if (CardSlotsHandler.instance.AtLeastTwoSlotIsFull())
             {
-                Debug.Log("Хотя б 2 заполненых.");
                 if (_cardDisplay == null && cardDisplay != null)
                 {
                     if (Parent == null && CardSlotsHandler.instance.ThereIsType(cardDisplay.card.Type))
                     {
-                        Debug.Log("Нет родителя, и тип подходит: " + cardDisplay.card.Type);
                         result = true;
                     }
                     else if (Parent != null && Parent.CardDisplay != null)
@@ -77,12 +82,10 @@ public class CardSlot : MonoBehaviour
             }
             else
             {
-                //Debug.Log("Заполнено меньше 2.");
                 if (_cardDisplay == null && cardDisplay != null)
                 {
                     if (Parent == null)
                     {
-                        //Debug.Log("Нет родителя.");
                         result = true;
                     }
                     else if (Parent != null && Parent.CardDisplay != null)
@@ -110,4 +113,7 @@ public class CardSlot : MonoBehaviour
 
         return result;
     }
+
+    public event Action OnSlotOpen;
+    public event Action OnSlotClose;
 }

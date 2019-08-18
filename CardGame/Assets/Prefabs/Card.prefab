@@ -48,8 +48,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   card: {fileID: 0}
-  frontSide: {fileID: 2775685375177489710}
-  backSide: {fileID: 2775685374757418578}
+  _frontSide: {fileID: 2775685375177489710}
+  _backSide: {fileID: 2775685374757418578}
+  _onSlot: 0
 --- !u!114 &5851169113978546872
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,7 +64,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nearestCardSlot: {fileID: 0}
-  onSlot: 0
 --- !u!61 &8098838923467936080
 BoxCollider2D:
   m_ObjectHideFlags: 0

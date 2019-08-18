@@ -15,13 +15,9 @@ public class DeckManager : MonoBehaviour
     public Transform opponentCardsPosition;
     public Transform playerCardsPosition;
     public Transform retreatSpawnPoint;
-    [Tooltip("Length of tline on which player and opponent cards will be located")]
+    [Tooltip("Length of line on which player and opponent cards will be located")]
     [Range(0, 10)] public int lineLength;
     public Turns currentTurn = Turns.Player;
-
-    [Header("Movement settings")]
-    public float movementDuration;
-    public AnimationCurve movementCurve;
 
     [Header("Debug")]
     [SerializeField] private Deck currentDeck;
@@ -34,7 +30,6 @@ public class DeckManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
-
         #region Checks for the correctness of the filled cards
 
         if (cards.Count != 36)
@@ -123,12 +118,14 @@ public class DeckManager : MonoBehaviour
 
     private void Start()
     {
-        SpawnDeck();
-        AddCardsToPlayer(6);
-        AddCardsToOpponent(6);
+        GameManager.instance.OnRetreat += () =>
+        {
+            if (playerCardsDisplays.Count < 6) AddCardsToPlayer(6 - playerCardsDisplays.Count);
+            if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(6 - opponentCardsDisplays.Count);
+        };
     }
 
-    private void SpawnDeck()
+    public void SpawnDeck()
     {
         playerCardsDisplays = new List<CardDisplay>();
         opponentCardsDisplays = new List<CardDisplay>();
@@ -161,12 +158,9 @@ public class DeckManager : MonoBehaviour
             TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 180, 180));
         }
         retreat.Push(cardDisplay);
-
-        if(playerCardsDisplays.Count < 6) AddCardsToPlayer(1);
-        if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(1);
     }
 
-    public static void AddCardsToPlayer(int numberOfCards)
+    public void AddCardsToPlayer(int numberOfCards)
     {
         instance.StartCoroutine(instance.GiveCardsToPlayer(numberOfCards));
     }
@@ -183,7 +177,7 @@ public class DeckManager : MonoBehaviour
         }
     }
 
-    public static void AddCardsToOpponent(int numberOfCards)
+    public void AddCardsToOpponent(int numberOfCards)
     {
         instance.StartCoroutine(instance.GiveCardsToOpponent(numberOfCards));
     }
@@ -231,8 +225,6 @@ public class DeckManager : MonoBehaviour
                 if (cardSlot.CanPutCard(opponentCardsDisplays[i]))
                 {
                     cardSlot.CardDisplay = opponentCardsDisplays[i];
-                    cardSlot.CardDisplay.GetComponent<DragDropCardHandler>().onSlot = true;
-                    CardSlotsHandler.instance.NumberOfClosedSlots++;
                     TransformHelper.SmoothMove(opponentCardsDisplays[i].transform, cardSlot.transform.position);
                     TransformHelper.SmoothRotate(opponentCardsDisplays[i].transform, new Vector3(0, 0, 0));
                     DeleteFromOpponent(opponentCardsDisplays[i]);
@@ -276,29 +268,22 @@ public class DeckManager : MonoBehaviour
         foreach (CardSlot cardSlot in cardSlots)
         {
             TransformHelper.SmoothRotate(cardSlot.CardDisplay.transform, new Vector3(0, 0, 0));
-            cardSlot.CardDisplay.GetComponent<DragDropCardHandler>().onSlot = false;
             playerCardsDisplays.Add(cardSlot.CardDisplay);
             RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
             cardSlot.CardDisplay = null;
         }
-
-        CardSlotsHandler.instance.NumberOfClosedSlots = 0;
     }
 
     public void GiveCardsToOpponentFromTable()
     {
         List<CardSlot> cardSlots = CardSlotsHandler.instance.GetClosedSlots();
-        Debug.Log("Я тут пытаюсь сбросился2");
+
         foreach (CardSlot cardSlot in cardSlots)
         {
-            Debug.Log("Я тут в цикле");
             TransformHelper.SmoothRotate(cardSlot.CardDisplay.transform, new Vector3(0, 180, 0));
-            cardSlot.CardDisplay.GetComponent<DragDropCardHandler>().onSlot = false;
             opponentCardsDisplays.Add(cardSlot.CardDisplay);
             RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
             cardSlot.CardDisplay = null;
         }
-        Debug.Log("Я тут сбросился2");
-        CardSlotsHandler.instance.NumberOfClosedSlots = 0;
     }
 }

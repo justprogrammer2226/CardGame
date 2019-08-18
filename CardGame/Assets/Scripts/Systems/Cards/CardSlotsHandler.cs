@@ -12,12 +12,12 @@ public class CardSlotsHandler : MonoBehaviour
     public int NumberOfClosedSlots
     {
         get => _numberOfClosedSlots;
-        set
+        private set
         {
-            _numberOfClosedSlots++;
+            _numberOfClosedSlots = value;
             if(_numberOfClosedSlots == cardSlots.Count)
             {
-                Retreat();
+                GameManager.instance.Retreat();
             }
         }
     }
@@ -25,11 +25,14 @@ public class CardSlotsHandler : MonoBehaviour
     private void Awake()
     {
         instance = this;
-    }
 
-    public void Retreat()
-    {
-        StartCoroutine(SmoothRetreat());
+        foreach (CardSlot cardSlot in cardSlots)
+        {
+            cardSlot.OnSlotClose += () => NumberOfClosedSlots++;
+            cardSlot.OnSlotOpen += () => NumberOfClosedSlots--;
+        }
+
+        GameManager.instance.OnRetreat += () => StartCoroutine(SmoothRetreat());
     }
 
     public List<CardSlot> GetClosedSlots()
@@ -48,8 +51,6 @@ public class CardSlotsHandler : MonoBehaviour
                 yield return new WaitForSeconds(0.1f);
             }
         }
-        Debug.Log("Я тут сбросился1");
-        NumberOfClosedSlots = 0;
     }
 
     public int GetIndexByCardSlot(CardSlot cardSlot)

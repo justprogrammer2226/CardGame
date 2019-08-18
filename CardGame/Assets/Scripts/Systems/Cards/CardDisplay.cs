@@ -4,8 +4,14 @@ public class CardDisplay : MonoBehaviour
 {
     public Card card;
 
-    [SerializeField] private SpriteRenderer frontSide;
-    [SerializeField] private SpriteRenderer backSide;
+    [SerializeField] private SpriteRenderer _frontSide;
+    [SerializeField] private SpriteRenderer _backSide;
+    [SerializeField] private bool _onSlot;
+    public bool OnSlot
+    {
+        get => _onSlot;
+        set => _onSlot = value;
+    }
 
     private void Start()
     {
@@ -14,13 +20,13 @@ public class CardDisplay : MonoBehaviour
 
     public void UpdateUI()
     {
-        frontSide.sprite = card.FrontSprite;
-        backSide.sprite = SettingsManager.instance.GetBackendSprite();
+        _frontSide.sprite = card.FrontSprite;
+        _backSide.sprite = SettingsManager.instance.GetBackendSprite();
     }
 
     public void SetOrderInLayer(int order)
     {
-        frontSide.sortingOrder = order;
-        backSide.sortingOrder = order;
+        _frontSide.sortingOrder = order;
+        _backSide.sortingOrder = order;
     }
 }
