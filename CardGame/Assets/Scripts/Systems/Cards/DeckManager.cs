@@ -123,8 +123,8 @@ public class DeckManager : MonoBehaviour
     private void Start()
     {
         SpawnDeck();
-        StartCoroutine(GiveCardsToPlayer());
-        StartCoroutine(GiveCardsToOpponent());
+        AddCardsToPlayer(6);
+        AddCardsToOpponent(6);
     }
 
     private void SpawnDeck()
@@ -133,120 +133,70 @@ public class DeckManager : MonoBehaviour
         opponentCardsDisplays = new List<CardDisplay>();
         retreat = new Stack<CardDisplay>();
 
+        // Create deck
         currentDeck = new Deck(cards, cardPrefab, deckSpawnPoint);
 
-        // Spawn trump card
+        // Settings trump card
         CardDisplay trumpCardDisplay = currentDeck.GetTrumpCard();
         trumpCardDisplay.transform.localPosition = new Vector3(0.3f, 0, 0);
         trumpCardDisplay.transform.localEulerAngles = new Vector3(0, 0, 90);
-        
-        // Spawn other card
+
+        // Settings other cards
         foreach (CardDisplay cardDisplay in currentDeck.GetCards())
         {
             cardDisplay.transform.localEulerAngles = new Vector3(0, 180, 0);
         }
     }
 
-    private IEnumerator GiveCardsToPlayer()
-    {
-        List<Vector3> points = GetPointsForCards(playerCardsPosition.position, lineLength, 6);
-
-        for (int i = 0; i < points.Count; i++)
-        {
-            CardDisplay cardDisplay = currentDeck.TakeCard();
-            cardDisplay.SetOrderInLayer(i);
-            SmoothRotate(cardDisplay, new Vector3(0, 0, 0));
-            SmoothMove(cardDisplay, points[i]);
-            AddToPlayer(cardDisplay);
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
-
-    private IEnumerator GiveCardsToOpponent()
-    {
-        List<Vector3> points = GetPointsForCards(opponentCardsPosition.position, lineLength, 6);
-
-        for (int i = 0; i < points.Count; i++)
-        {
-            CardDisplay cardDisplay = currentDeck.TakeCard();
-            cardDisplay.SetOrderInLayer(i);
-            SmoothRotate(cardDisplay, new Vector3(0, 180, 0));
-            SmoothMove(cardDisplay, points[i]);
-            AddToOpponent(cardDisplay);
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
-
-    private List<Vector3> GetPointsForCards(Vector3 cardsPosition, int length, int numberOfCards)
-    {
-        List<Vector3> points = new List<Vector3>();
-
-        float step = (float)length / numberOfCards;
-        float temp = cardsPosition.x - (float)length / 2 + step / 2;
-
-        for (int i = 0; i < numberOfCards; i++)
-        {
-            points.Add(new Vector3(cardsPosition.x + temp, cardsPosition.y, cardsPosition.z));
-            temp += step;
-        }
-
-        return points;
-    }
-
-    public void SmoothMove(CardDisplay cardDisplay, Vector3 endPosition)
-    {
-        StartCoroutine(MoveCard(cardDisplay, endPosition));
-    }
-
-    private IEnumerator MoveCard(CardDisplay cardDisplay, Vector3 endPosition)
-    {
-        Vector3 startPosition = cardDisplay.transform.position;
-        float timer = 0.0f;
-        while (timer < movementDuration)
-        {
-            timer += Time.deltaTime;
-            cardDisplay.transform.position = Vector3.Lerp(startPosition, endPosition, movementCurve.Evaluate(timer / movementDuration));
-            yield return null;
-        }
-        cardDisplay.transform.position = endPosition;
-    }
-
-    public void SmoothRotate(CardDisplay cardDisplay, Vector3 endPosition)
-    {
-        StartCoroutine(RotateCard(cardDisplay, endPosition));
-    }
-
-    private IEnumerator RotateCard(CardDisplay cardDisplay, Vector3 targetRotation)
-    {
-        while (cardDisplay.transform.rotation != Quaternion.Euler(targetRotation))
-        {
-            cardDisplay.transform.rotation = Quaternion.RotateTowards(cardDisplay.transform.rotation, Quaternion.Euler(targetRotation), 200 * Time.deltaTime);
-            yield return null;
-        }
-    }
-
     public void AddToRetreat(CardDisplay cardDisplay)
     {
-        SmoothMove(cardDisplay, retreatSpawnPoint.position);
+        TransformHelper.SmoothMove(cardDisplay.transform, retreatSpawnPoint.position);
         if (Mathf.RoundToInt(UnityEngine.Random.value) == 0)
         {
-            SmoothRotate(cardDisplay, new Vector3(180, 0, 180));
+            TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(180, 0, 180));
         }
         else
         {
-            SmoothRotate(cardDisplay, new Vector3(0, 180, 180));
+            TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 180, 180));
         }
         retreat.Push(cardDisplay);
+
+        if(playerCardsDisplays.Count < 6) AddCardsToPlayer(1);
+        if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(1);
     }
 
-    public void AddToPlayer(CardDisplay cardDisplay)
+    public static void AddCardsToPlayer(int numberOfCards)
     {
-        playerCardsDisplays.Add(cardDisplay);
+        instance.StartCoroutine(instance.GiveCardsToPlayer(numberOfCards));
     }
 
-    public void AddToOpponent(CardDisplay cardDisplay)
+    private IEnumerator GiveCardsToPlayer(int numberOfCards)
     {
-        opponentCardsDisplays.Add(cardDisplay);
+        for (int i = 0; i < numberOfCards; i++)
+        {
+            CardDisplay cardDisplay = currentDeck.TakeCard();
+            TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 0, 0));
+            playerCardsDisplays.Add(cardDisplay);
+            RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    public static void AddCardsToOpponent(int numberOfCards)
+    {
+        instance.StartCoroutine(instance.GiveCardsToOpponent(numberOfCards));
+    }
+
+    private IEnumerator GiveCardsToOpponent(int numberOfCards)
+    {
+        for (int i = 0; i < numberOfCards; i++)
+        {
+            CardDisplay cardDisplay = currentDeck.TakeCard();
+            TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 180, 0));
+            opponentCardsDisplays.Add(cardDisplay);
+            RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
     public void DeleteFromPlayer(CardDisplay cardDisplay)
@@ -268,11 +218,12 @@ public class DeckManager : MonoBehaviour
 
     public void RebuildCardDisplays(List<CardDisplay> cardDisplays, Vector3 cardsPosition, int length)
     {
-        List<Vector3> points = GetPointsForCards(cardsPosition, length, cardDisplays.Count);
+        List<Vector3> points = TransformHelper.GetPointsForLine(cardsPosition, length, cardDisplays.Count);
 
         for (int i = 0; i < points.Count; i++)
         {
-            SmoothMove(cardDisplays[i], points[i]);
+            cardDisplays[i].SetOrderInLayer(i);
+            TransformHelper.SmoothMove(cardDisplays[i].transform, points[i]);
         }
     }
 

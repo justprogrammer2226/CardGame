@@ -41,7 +41,6 @@ public class CardSlotsHandler : MonoBehaviour
 
     public bool ThereIsType(CardTypes cardType)
     {
-        Debug.Log("Types: " + string.Join(", ", cardSlots.Where(_ => _.CardDisplay != null).Select(_ => _.CardDisplay.card.Type.ToString())));
         return cardSlots.Where(_ => _.CardDisplay != null).Select(_ => _.CardDisplay.card.Type).Contains(cardType);
     }
 

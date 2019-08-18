@@ -8,7 +8,6 @@ public class CardSlot : MonoBehaviour
         get => _cardDisplay;
         set
         {
-            Debug.Log("Can: " + CanPutCard(value));
             if (CanPutCard(value))
             {
                 if (value == null)
@@ -45,10 +44,8 @@ public class CardSlot : MonoBehaviour
         }
         else if (CardSlotsHandler.instance.numberOfClosedSlots == CardSlotsHandler.instance.GetIndexByCardSlot(this))
         {
-            Debug.Log("оп");
             if (CardSlotsHandler.instance.AtLeastTwoSlotIsFull())
             {
-                Debug.Log("выа");
                 if (_cardDisplay == null && cardDisplay != null)
                 {
                     if (Parent == null && CardSlotsHandler.instance.ThereIsType(cardDisplay.card.Type))
@@ -78,10 +75,8 @@ public class CardSlot : MonoBehaviour
             }
             else
             {
-                Debug.Log("1");
                 if (_cardDisplay == null && cardDisplay != null)
                 {
-                    Debug.Log("2");
                     if (Parent == null)
                     {
                         result = true;
@@ -104,7 +99,6 @@ public class CardSlot : MonoBehaviour
                 }
                 else if (cardDisplay == null)
                 {
-                    Debug.Log("3");
                     result = true;
                 }
             }

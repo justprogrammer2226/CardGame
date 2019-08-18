@@ -42,12 +42,12 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
             nearestCardSlot.CardDisplay = currentCardDisplay;
             onSlot = true;
             CardSlotsHandler.instance.numberOfClosedSlots++;
-            DeckManager.instance.SmoothMove(currentCardDisplay, nearestCardSlot.transform.position);
+            TransformHelper.SmoothMove(currentCardDisplay.transform, nearestCardSlot.transform.position);
             DeckManager.instance.DeleteFromPlayer(currentCardDisplay);
         }
         else
         {
-            DeckManager.instance.SmoothMove(currentCardDisplay, startCoord);
+            TransformHelper.SmoothMove(currentCardDisplay.transform, startCoord);
         }
     }
 
