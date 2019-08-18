@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
 {
     [SerializeField] private CardSlot nearestCardSlot;
-    [SerializeField] private bool onSlot;
+    public bool onSlot;
 
     private Vector3 startCoord;
     private Vector3 currentTouchCoord;
@@ -28,7 +28,7 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
 
     public void OnDrag(PointerEventData eventData)
     {
-        if(!onSlot && DeckManager.instance.IsPlayerCard(currentCardDisplay))
+        if(!onSlot && DeckManager.instance.currentTurn == Turns.Player && DeckManager.instance.IsPlayerCard(currentCardDisplay))
         {
             currentTouchCoord = Camera.main.ScreenToWorldPoint(eventData.position);
             transform.position += currentTouchCoord - lastTouchCoord;
@@ -37,11 +37,11 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        if(!onSlot && nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
+        if(!onSlot && DeckManager.instance.currentTurn == Turns.Player && nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
         {
             nearestCardSlot.CardDisplay = currentCardDisplay;
             onSlot = true;
-            CardSlotsHandler.instance.numberOfClosedSlots++;
+            CardSlotsHandler.instance.NumberOfClosedSlots++;
             TransformHelper.SmoothMove(currentCardDisplay.transform, nearestCardSlot.transform.position);
             DeckManager.instance.DeleteFromPlayer(currentCardDisplay);
         }

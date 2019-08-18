@@ -42,14 +42,16 @@ public class CardSlot : MonoBehaviour
         {
             result = true;
         }
-        else if (CardSlotsHandler.instance.numberOfClosedSlots == CardSlotsHandler.instance.GetIndexByCardSlot(this))
+        else if (CardSlotsHandler.instance.NumberOfClosedSlots == CardSlotsHandler.instance.GetIndexByCardSlot(this))
         {
             if (CardSlotsHandler.instance.AtLeastTwoSlotIsFull())
             {
+                Debug.Log("Хотя б 2 заполненых.");
                 if (_cardDisplay == null && cardDisplay != null)
                 {
                     if (Parent == null && CardSlotsHandler.instance.ThereIsType(cardDisplay.card.Type))
                     {
+                        Debug.Log("Нет родителя, и тип подходит: " + cardDisplay.card.Type);
                         result = true;
                     }
                     else if (Parent != null && Parent.CardDisplay != null)
@@ -75,10 +77,12 @@ public class CardSlot : MonoBehaviour
             }
             else
             {
+                //Debug.Log("Заполнено меньше 2.");
                 if (_cardDisplay == null && cardDisplay != null)
                 {
                     if (Parent == null)
                     {
+                        //Debug.Log("Нет родителя.");
                         result = true;
                     }
                     else if (Parent != null && Parent.CardDisplay != null)

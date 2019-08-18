@@ -17,6 +17,7 @@ public class DeckManager : MonoBehaviour
     public Transform retreatSpawnPoint;
     [Tooltip("Length of tline on which player and opponent cards will be located")]
     [Range(0, 10)] public int lineLength;
+    public Turns currentTurn = Turns.Player;
 
     [Header("Movement settings")]
     public float movementDuration;
@@ -203,12 +204,48 @@ public class DeckManager : MonoBehaviour
     {
         playerCardsDisplays.Remove(cardDisplay);
         RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
+        NextTurn();
     }
 
     public void DeleteFromOpponent(CardDisplay cardDisplay)
     {
         opponentCardsDisplays.Remove(cardDisplay);
         RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
+        NextTurn();
+    }
+
+    private void NextTurn()
+    {
+        if(currentTurn == Turns.Bot)
+        {
+            currentTurn = Turns.Player;
+        }
+        else
+        {
+            currentTurn = Turns.Bot;
+
+            var cardSlot = CardSlotsHandler.instance.GetFirstFree();
+
+            for (int i = 0; i < opponentCardsDisplays.Count; i++)
+            {
+                if (cardSlot.CanPutCard(opponentCardsDisplays[i]))
+                {
+                    cardSlot.CardDisplay = opponentCardsDisplays[i];
+                    cardSlot.CardDisplay.GetComponent<DragDropCardHandler>().onSlot = true;
+                    CardSlotsHandler.instance.NumberOfClosedSlots++;
+                    TransformHelper.SmoothMove(opponentCardsDisplays[i].transform, cardSlot.transform.position);
+                    TransformHelper.SmoothRotate(opponentCardsDisplays[i].transform, new Vector3(0, 0, 0));
+                    DeleteFromOpponent(opponentCardsDisplays[i]);
+                    break;
+                }
+                if (i == opponentCardsDisplays.Count - 1)
+                {
+                    Debug.Log("У меня нет чем ходить бро:(");
+                    GiveCardsToOpponentFromTable();
+                    currentTurn = Turns.Player;
+                }
+            }
+        }
     }
 
     public bool IsPlayerCard(CardDisplay cardDisplay)
@@ -230,5 +267,38 @@ public class DeckManager : MonoBehaviour
     public CardSuits GetTrump()
     {
         return currentDeck.GetTrump();
+    }
+
+    public void GiveCardsToPlayerFromTable()
+    {
+        List<CardSlot> cardSlots = CardSlotsHandler.instance.GetClosedSlots();
+
+        foreach (CardSlot cardSlot in cardSlots)
+        {
+            TransformHelper.SmoothRotate(cardSlot.CardDisplay.transform, new Vector3(0, 0, 0));
+            cardSlot.CardDisplay.GetComponent<DragDropCardHandler>().onSlot = false;
+            playerCardsDisplays.Add(cardSlot.CardDisplay);
+            RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
+            cardSlot.CardDisplay = null;
+        }
+
+        CardSlotsHandler.instance.NumberOfClosedSlots = 0;
+    }
+
+    public void GiveCardsToOpponentFromTable()
+    {
+        List<CardSlot> cardSlots = CardSlotsHandler.instance.GetClosedSlots();
+        Debug.Log("Я тут пытаюсь сбросился2");
+        foreach (CardSlot cardSlot in cardSlots)
+        {
+            Debug.Log("Я тут в цикле");
+            TransformHelper.SmoothRotate(cardSlot.CardDisplay.transform, new Vector3(0, 180, 0));
+            cardSlot.CardDisplay.GetComponent<DragDropCardHandler>().onSlot = false;
+            opponentCardsDisplays.Add(cardSlot.CardDisplay);
+            RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
+            cardSlot.CardDisplay = null;
+        }
+        Debug.Log("Я тут сбросился2");
+        CardSlotsHandler.instance.NumberOfClosedSlots = 0;
     }
 }
