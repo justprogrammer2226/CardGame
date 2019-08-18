@@ -3,16 +3,15 @@ using UnityEngine;
 using System;
 using System.Linq;
 
-public class Deck
+public class Deck : MonoBehaviour
 {
-    private Stack<Card> deck;
-    private Card trumpCard;
+    private Stack<CardDisplay> deck;
+    private CardDisplay trumpCard;
 
-    public Deck(List<Card> cards)
+    public Deck(List<Card> cards, GameObject cardPrefab, Transform deckSpawnPoint)
     {
-        deck?.Clear();
         ShuffleCards(cards);
-        deck = new Stack<Card>(cards);
+        SpawnCards(cards, cardPrefab, deckSpawnPoint);
         trumpCard = deck.Pop();
     }
 
@@ -27,22 +26,34 @@ public class Deck
         }
     }
 
-    public CardSuits GetTrump()
+    private void SpawnCards(List<Card> cards, GameObject cardPrefab, Transform deckSpawnPoint)
     {
-        return GetTrumpCard().Suit;
+        deck = new Stack<CardDisplay>();
+        foreach (Card card in cards)
+        {
+            CardDisplay cardDisplay = Instantiate(cardPrefab, deckSpawnPoint.position, Quaternion.identity, deckSpawnPoint).GetComponent<CardDisplay>();
+            cardDisplay.card = card;
+            cardDisplay.UpdateUI();
+            deck.Push(cardDisplay);
+        }
     }
 
-    public Card GetTrumpCard()
+    public CardSuits GetTrump()
+    {
+        return GetTrumpCard().card.Suit;
+    }
+
+    public CardDisplay GetTrumpCard()
     {
         return trumpCard;
     }
 
-    public List<Card> GetCards()
+    public List<CardDisplay> GetCards()
     {
         return deck.ToList();
     }
 
-    public Card TakeCard()
+    public CardDisplay TakeCard()
     {
         return deck.Pop();
     }

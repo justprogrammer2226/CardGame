@@ -37,7 +37,7 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        if(nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
+        if(!onSlot && nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
         {
             nearestCardSlot.CardDisplay = currentCardDisplay;
             onSlot = true;
@@ -53,7 +53,7 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.tag == "CardSlot" && collision.GetComponent<CardSlot>().CanPutCard(currentCardDisplay))
+        if (!onSlot && collision.tag == "CardSlot" && collision.GetComponent<CardSlot>().CanPutCard(currentCardDisplay))
         {
             nearestCardSlot = collision.GetComponent<CardSlot>();
         }

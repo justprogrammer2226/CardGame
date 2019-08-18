@@ -8,24 +8,22 @@ public class CardSlot : MonoBehaviour
         get => _cardDisplay;
         set
         {
-            if (CardSlotsHandler.instance.numberOfClosedSlots == CardSlotsHandler.instance.GetIndexByCardSlot(this))
+            Debug.Log("Can: " + CanPutCard(value));
+            if (CanPutCard(value))
             {
-                if (_cardDisplay == null && value != null)
-                {
-                    if (Parent == null)
-                    {
-                        _cardDisplay = value;
-                        _cardDisplay.SetOrderInLayer(-1);
-                    }
-                    else if (Parent != null && Parent.CardDisplay != null && Parent.CardDisplay.card.Suit == value.card.Suit && Parent.CardDisplay.card.Type < value.card.Type)
-                    {
-                        _cardDisplay = value;
-                        _cardDisplay.SetOrderInLayer(0);
-                    }
-                }
-                else if (value == null)
+                if (value == null)
                 {
                     _cardDisplay = value;
+                }
+                else if (Parent == null)
+                {
+                    _cardDisplay = value;
+                    _cardDisplay.SetOrderInLayer(-1);
+                }
+                else if (Parent != null)
+                {
+                    _cardDisplay = value;
+                    _cardDisplay.SetOrderInLayer(0);
                 }
             }
         }
@@ -41,22 +39,74 @@ public class CardSlot : MonoBehaviour
     {
         bool result = false;
 
-        if (CardSlotsHandler.instance.numberOfClosedSlots == CardSlotsHandler.instance.GetIndexByCardSlot(this))
+        if (cardDisplay == null)
         {
-            if (_cardDisplay == null && cardDisplay != null)
+            result = true;
+        }
+        else if (CardSlotsHandler.instance.numberOfClosedSlots == CardSlotsHandler.instance.GetIndexByCardSlot(this))
+        {
+            Debug.Log("оп");
+            if (CardSlotsHandler.instance.AtLeastTwoSlotIsFull())
             {
-                if (Parent == null)
+                Debug.Log("выа");
+                if (_cardDisplay == null && cardDisplay != null)
                 {
-                    result = true;
+                    if (Parent == null && CardSlotsHandler.instance.ThereIsType(cardDisplay.card.Type))
+                    {
+                        result = true;
+                    }
+                    else if (Parent != null && Parent.CardDisplay != null)
+                    {
+                        if (Parent.CardDisplay.card.Suit == cardDisplay.card.Suit && Parent.CardDisplay.card.Type < cardDisplay.card.Type)
+                        {
+                            result = true;
+                        }
+                        else if (cardDisplay.card.Suit == DeckManager.instance.GetTrump() && Parent.CardDisplay.card.Suit != DeckManager.instance.GetTrump())
+                        {
+                            result = true;
+                        }
+                        else if (cardDisplay.card.Suit == DeckManager.instance.GetTrump() && Parent.CardDisplay.card.Suit == DeckManager.instance.GetTrump() && Parent.CardDisplay.card.Type < cardDisplay.card.Type)
+                        {
+                            result = true;
+                        }
+                    }
                 }
-                else if (Parent != null && Parent.CardDisplay != null && Parent.CardDisplay.card.Suit == cardDisplay.card.Suit && Parent.CardDisplay.card.Type < cardDisplay.card.Type)
+                else if (cardDisplay == null)
                 {
                     result = true;
                 }
             }
-            else if (cardDisplay == null)
+            else
             {
-                result = true;
+                Debug.Log("1");
+                if (_cardDisplay == null && cardDisplay != null)
+                {
+                    Debug.Log("2");
+                    if (Parent == null)
+                    {
+                        result = true;
+                    }
+                    else if (Parent != null && Parent.CardDisplay != null)
+                    {
+                        if (Parent.CardDisplay.card.Suit == cardDisplay.card.Suit && Parent.CardDisplay.card.Type < cardDisplay.card.Type)
+                        {
+                            result = true;
+                        }
+                        else if (cardDisplay.card.Suit == DeckManager.instance.GetTrump() && Parent.CardDisplay.card.Suit != DeckManager.instance.GetTrump())
+                        {
+                            result = true;
+                        }
+                        else if (cardDisplay.card.Suit == DeckManager.instance.GetTrump() && Parent.CardDisplay.card.Suit == DeckManager.instance.GetTrump() && Parent.CardDisplay.card.Type < cardDisplay.card.Type)
+                        {
+                            result = true;
+                        }
+                    }
+                }
+                else if (cardDisplay == null)
+                {
+                    Debug.Log("3");
+                    result = true;
+                }
             }
         }
 

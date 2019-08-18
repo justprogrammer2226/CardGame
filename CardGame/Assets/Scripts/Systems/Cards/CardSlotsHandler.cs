@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CardSlotsHandler : MonoBehaviour
@@ -36,5 +37,16 @@ public class CardSlotsHandler : MonoBehaviour
     public int GetIndexByCardSlot(CardSlot cardSlot)
     {
         return cardSlots.IndexOf(cardSlot);
+    }
+
+    public bool ThereIsType(CardTypes cardType)
+    {
+        Debug.Log("Types: " + string.Join(", ", cardSlots.Where(_ => _.CardDisplay != null).Select(_ => _.CardDisplay.card.Type.ToString())));
+        return cardSlots.Where(_ => _.CardDisplay != null).Select(_ => _.CardDisplay.card.Type).Contains(cardType);
+    }
+
+    public bool AtLeastTwoSlotIsFull()
+    {
+        return cardSlots.Where(_ => _.CardDisplay != null).Count() >= 2;
     }
 }

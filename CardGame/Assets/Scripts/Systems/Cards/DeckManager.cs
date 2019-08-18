@@ -24,8 +24,6 @@ public class DeckManager : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private Deck currentDeck;
-    [SerializeField] private List<CardDisplay> cardDisplays;
-    [SerializeField] private CardDisplay trumpCardDisplay;
 
     [Header("Cards in game")]
     [SerializeField] private List<CardDisplay> playerCardsDisplays;
@@ -124,8 +122,6 @@ public class DeckManager : MonoBehaviour
 
     private void Start()
     {
-        currentDeck = new Deck(cards);
-
         SpawnDeck();
         StartCoroutine(GiveCardsToPlayer());
         StartCoroutine(GiveCardsToOpponent());
@@ -137,22 +133,17 @@ public class DeckManager : MonoBehaviour
         opponentCardsDisplays = new List<CardDisplay>();
         retreat = new Stack<CardDisplay>();
 
+        currentDeck = new Deck(cards, cardPrefab, deckSpawnPoint);
 
         // Spawn trump card
-        trumpCardDisplay = Instantiate(cardPrefab, deckSpawnPoint.position, Quaternion.identity, deckSpawnPoint).GetComponent<CardDisplay>();
-        trumpCardDisplay.card = currentDeck.GetTrumpCard();
-        trumpCardDisplay.UpdateUI();
+        CardDisplay trumpCardDisplay = currentDeck.GetTrumpCard();
         trumpCardDisplay.transform.localPosition = new Vector3(0.3f, 0, 0);
         trumpCardDisplay.transform.localEulerAngles = new Vector3(0, 0, 90);
         
         // Spawn other card
-        foreach (Card card in currentDeck.GetCards())
+        foreach (CardDisplay cardDisplay in currentDeck.GetCards())
         {
-            CardDisplay cardDisplay = Instantiate(cardPrefab, deckSpawnPoint.position, Quaternion.identity, deckSpawnPoint).GetComponent<CardDisplay>();
-            cardDisplay.card = card;
-            cardDisplay.UpdateUI();
             cardDisplay.transform.localEulerAngles = new Vector3(0, 180, 0);
-            cardDisplays.Add(cardDisplay);
         }
     }
 
@@ -162,8 +153,7 @@ public class DeckManager : MonoBehaviour
 
         for (int i = 0; i < points.Count; i++)
         {
-            Card takedCard = currentDeck.TakeCard();
-            CardDisplay cardDisplay = cardDisplays.Where(_ => _.card == takedCard).Single();
+            CardDisplay cardDisplay = currentDeck.TakeCard();
             cardDisplay.SetOrderInLayer(i);
             SmoothRotate(cardDisplay, new Vector3(0, 0, 0));
             SmoothMove(cardDisplay, points[i]);
@@ -178,8 +168,7 @@ public class DeckManager : MonoBehaviour
 
         for (int i = 0; i < points.Count; i++)
         {
-            Card takedCard = currentDeck.TakeCard();
-            CardDisplay cardDisplay = cardDisplays.Where(_ => _.card == takedCard).Single();
+            CardDisplay cardDisplay = currentDeck.TakeCard();
             cardDisplay.SetOrderInLayer(i);
             SmoothRotate(cardDisplay, new Vector3(0, 180, 0));
             SmoothMove(cardDisplay, points[i]);
@@ -285,5 +274,10 @@ public class DeckManager : MonoBehaviour
         {
             SmoothMove(cardDisplays[i], points[i]);
         }
+    }
+
+    public CardSuits GetTrump()
+    {
+        return currentDeck.GetTrump();
     }
 }
