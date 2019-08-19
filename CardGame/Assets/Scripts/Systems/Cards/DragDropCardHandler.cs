@@ -27,7 +27,7 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
 
     public void OnDrag(PointerEventData eventData)
     {
-        if(!currentCardDisplay.OnSlot && DeckManager.instance.currentTurn == Turns.Player && DeckManager.instance.IsPlayerCard(currentCardDisplay))
+        if(!currentCardDisplay.OnSlot && GameManager.instance.CurrentTurn == Turns.Player && DeckManager.instance.IsPlayerCard(currentCardDisplay))
         {
             currentTouchCoord = Camera.main.ScreenToWorldPoint(eventData.position);
             transform.position += currentTouchCoord - lastTouchCoord;
@@ -36,7 +36,7 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        if(!currentCardDisplay.OnSlot && DeckManager.instance.currentTurn == Turns.Player && nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
+        if(!currentCardDisplay.OnSlot && GameManager.instance.CurrentTurn == Turns.Player && nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
         {
             nearestCardSlot.CardDisplay = currentCardDisplay;
             TransformHelper.SmoothMove(currentCardDisplay.transform, nearestCardSlot.transform.position);

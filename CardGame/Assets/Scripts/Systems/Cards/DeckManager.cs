@@ -17,7 +17,6 @@ public class DeckManager : MonoBehaviour
     public Transform retreatSpawnPoint;
     [Tooltip("Length of line on which player and opponent cards will be located")]
     [Range(0, 10)] public int lineLength;
-    public Turns currentTurn = Turns.Player;
 
     [Header("Debug")]
     [SerializeField] private Deck currentDeck;
@@ -123,6 +122,8 @@ public class DeckManager : MonoBehaviour
             if (playerCardsDisplays.Count < 6) AddCardsToPlayer(6 - playerCardsDisplays.Count);
             if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(6 - opponentCardsDisplays.Count);
         };
+
+        GameManager.instance.OnChangeTurn += (turn) => OnNextTurn(turn);
     }
 
     public void SpawnDeck()
@@ -172,7 +173,6 @@ public class DeckManager : MonoBehaviour
             CardDisplay cardDisplay = currentDeck.TakeCard();
             TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 0, 0));
             playerCardsDisplays.Add(cardDisplay);
-            Debug.Log("REBUILD FOR PLAYER");
             RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
             yield return new WaitForSeconds(0.1f);
         }
@@ -199,46 +199,14 @@ public class DeckManager : MonoBehaviour
     {
         playerCardsDisplays.Remove(cardDisplay);
         RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
-        NextTurn();
+        GameManager.instance.NextTurn();
     }
 
     public void DeleteFromOpponent(CardDisplay cardDisplay)
     {
         opponentCardsDisplays.Remove(cardDisplay);
         RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
-        NextTurn();
-    }
-
-    private void NextTurn()
-    {
-        if(currentTurn == Turns.Bot)
-        {
-            currentTurn = Turns.Player;
-        }
-        else
-        {
-            currentTurn = Turns.Bot;
-
-            var cardSlot = CardSlotsHandler.instance.GetFirstFree();
-
-            for (int i = 0; i < opponentCardsDisplays.Count; i++)
-            {
-                if (cardSlot.CanPutCard(opponentCardsDisplays[i]))
-                {
-                    cardSlot.CardDisplay = opponentCardsDisplays[i];
-                    TransformHelper.SmoothMove(opponentCardsDisplays[i].transform, cardSlot.transform.position);
-                    TransformHelper.SmoothRotate(opponentCardsDisplays[i].transform, new Vector3(0, 0, 0));
-                    DeleteFromOpponent(opponentCardsDisplays[i]);
-                    break;
-                }
-                if (i == opponentCardsDisplays.Count - 1)
-                {
-                    Debug.Log("У меня нет чем ходить бро:(");
-                    GiveCardsToOpponentFromTable();
-                    currentTurn = Turns.Player;
-                }
-            }
-        }
+        GameManager.instance.NextTurn();
     }
 
     public bool IsPlayerCard(CardDisplay cardDisplay)
@@ -273,6 +241,9 @@ public class DeckManager : MonoBehaviour
             RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
             cardSlot.CardDisplay = null;
         }
+
+        if (playerCardsDisplays.Count < 6) AddCardsToPlayer(6 - playerCardsDisplays.Count);
+        if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(6 - opponentCardsDisplays.Count);
     }
 
     public void GiveCardsToOpponentFromTable()
@@ -285,6 +256,43 @@ public class DeckManager : MonoBehaviour
             opponentCardsDisplays.Add(cardSlot.CardDisplay);
             RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
             cardSlot.CardDisplay = null;
+        }
+
+        if (playerCardsDisplays.Count < 6) AddCardsToPlayer(6 - playerCardsDisplays.Count);
+        if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(6 - opponentCardsDisplays.Count);
+    }
+
+    private void OnNextTurn(Turns turn)
+    {
+        if (turn == Turns.Bot)
+        {
+            Debug.Log("Щя будет бот ходить или забирать");
+            var cardSlot = CardSlotsHandler.instance.GetFirstFree();
+
+            if(cardSlot != null)
+            {
+                for (int i = 0; i < opponentCardsDisplays.Count; i++)
+                {
+                    if (cardSlot.CanPutCard(opponentCardsDisplays[i]))
+                    {
+                        cardSlot.CardDisplay = opponentCardsDisplays[i];
+                        Debug.Log("cardSlot.transform.position: " + cardSlot.transform.position);
+                        Debug.Log("cardSlot.name: " + cardSlot.name);
+                        TransformHelper.SmoothMove(opponentCardsDisplays[i].transform, cardSlot.transform.position);
+                        TransformHelper.SmoothRotate(opponentCardsDisplays[i].transform, new Vector3(0, 0, 0));
+                        DeleteFromOpponent(opponentCardsDisplays[i]);
+                        break;
+                    }
+                    if (i == opponentCardsDisplays.Count - 1)
+                    {
+                        Debug.Log("У меня нет чем ходить бро, я забираю карты:(");
+                        GiveCardsToOpponentFromTable();
+                        GameManager.instance.NextTurn();
+                    }
+                }
+            }
+
+          
         }
     }
 }

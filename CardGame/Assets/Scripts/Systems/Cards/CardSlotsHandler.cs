@@ -17,6 +17,7 @@ public class CardSlotsHandler : MonoBehaviour
             _numberOfClosedSlots = value;
             if(_numberOfClosedSlots == cardSlots.Count)
             {
+                Debug.Log("Я ВЫЗЫВАЮ ОТБОЙ");
                 GameManager.instance.Retreat();
             }
         }
@@ -32,7 +33,23 @@ public class CardSlotsHandler : MonoBehaviour
             cardSlot.OnSlotOpen += () => NumberOfClosedSlots--;
         }
 
-        GameManager.instance.OnRetreat += () => StartCoroutine(SmoothRetreat());
+        GameManager.instance.OnRetreat += () =>
+        {
+            // Perhaps you are wondering why I do not do the same in coroutine?
+            // The fact is that due to a delay in coroutine in, all slots are reset to zero after SOME TIME,
+            // because of this, the bot threw a card then the card will fly away immediately to retreat.
+
+            // Saves cardDisplays
+            List<CardDisplay> cardDisplays = GetClosedSlots().Select(_ => _.CardDisplay).ToList();
+            Debug.Log("Сбросил все ссылки на карточные слоты, количество сохраненных: " + cardDisplays.Count);
+            // Resets cardDisplay in closed slots
+            foreach (CardSlot cardSlot in GetClosedSlots())
+            {
+                cardSlot.CardDisplay = null;
+            }
+            // Start moving cardDisplays
+            StartCoroutine(SmoothRetreat(cardDisplays));
+        };
     }
 
     public List<CardSlot> GetClosedSlots()
@@ -40,16 +57,12 @@ public class CardSlotsHandler : MonoBehaviour
         return cardSlots.Where(_ => _.CardDisplay != null).ToList();
     }
 
-    private IEnumerator SmoothRetreat()
+    private IEnumerator SmoothRetreat(List<CardDisplay> cardDisplays)
     {
-        foreach (CardSlot cardSlot in cardSlots)
+        foreach (CardDisplay cardDisplay in cardDisplays)
         {
-            if (cardSlot.CardDisplay != null)
-            {
-                DeckManager.instance.AddToRetreat(cardSlot.CardDisplay);
-                cardSlot.CardDisplay = null;
-                yield return new WaitForSeconds(0.1f);
-            }
+            DeckManager.instance.AddToRetreat(cardDisplay);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
@@ -60,7 +73,6 @@ public class CardSlotsHandler : MonoBehaviour
 
     public bool ThereIsType(CardTypes cardType)
     {
-        Debug.Log("Все типы" + string.Join(", ", cardSlots.Where(_ => _.CardDisplay != null).Select(_ => _.CardDisplay.card.Type)));
         return cardSlots.Where(_ => _.CardDisplay != null).Select(_ => _.CardDisplay.card.Type).Contains(cardType);
     }
 
@@ -71,6 +83,6 @@ public class CardSlotsHandler : MonoBehaviour
 
     public CardSlot GetFirstFree()
     {
-        return cardSlots.Where(_ => _.CardDisplay == null).First();
+        return cardSlots.Where(_ => _.CardDisplay == null).FirstOrDefault();
     }
 }
