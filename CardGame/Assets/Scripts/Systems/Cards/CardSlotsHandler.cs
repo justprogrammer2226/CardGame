@@ -17,7 +17,6 @@ public class CardSlotsHandler : MonoBehaviour
             _numberOfClosedSlots = value;
             if(_numberOfClosedSlots == cardSlots.Count)
             {
-                Debug.Log("Я ВЫЗЫВАЮ ОТБОЙ");
                 GameManager.instance.Retreat();
             }
         }
@@ -35,17 +34,13 @@ public class CardSlotsHandler : MonoBehaviour
 
         GameManager.instance.OnRetreat += () =>
         {
-            // Perhaps you are wondering why I do not do the same in coroutine?
-            // The fact is that due to a delay in coroutine in, all slots are reset to zero after SOME TIME,
-            // because of this, the bot threw a card then the card will fly away immediately to retreat.
-
             // Saves cardDisplays
             List<CardDisplay> cardDisplays = GetClosedSlots().Select(_ => _.CardDisplay).ToList();
-            Debug.Log("Сбросил все ссылки на карточные слоты, количество сохраненных: " + cardDisplays.Count);
             // Resets cardDisplay in closed slots
             foreach (CardSlot cardSlot in GetClosedSlots())
             {
                 cardSlot.CardDisplay = null;
+                cardSlot.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 15f / 255);
             }
             // Start moving cardDisplays
             StartCoroutine(SmoothRetreat(cardDisplays));
@@ -79,6 +74,11 @@ public class CardSlotsHandler : MonoBehaviour
     public bool AtLeastTwoSlotIsFull()
     {
         return cardSlots.Where(_ => _.CardDisplay != null).Count() >= 2;
+    }
+
+    public bool AtLeastOneSlotIsFull()
+    {
+        return cardSlots.Where(_ => _.CardDisplay != null).Count() >= 1;
     }
 
     public CardSlot GetFirstFree()

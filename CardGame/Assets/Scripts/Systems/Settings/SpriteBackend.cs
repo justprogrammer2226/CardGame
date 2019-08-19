@@ -15,6 +15,7 @@ public class SpriteBackend : MonoBehaviour, IPointerDownHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        AudioManager.PlaySound("chipsCollide1");
         int indexCurrentImage = SettingsManager.instance.GetIndexByImage(_image);
         SettingsManager.instance.SelectSpriteBackend(indexCurrentImage);
     }

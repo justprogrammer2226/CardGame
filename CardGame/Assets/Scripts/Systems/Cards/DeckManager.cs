@@ -12,18 +12,17 @@ public class DeckManager : MonoBehaviour
     [SerializeField] private List<Card> cards;
     public GameObject cardPrefab;
     public Transform deckSpawnPoint;
-    public Transform opponentCardsPosition;
     public Transform playerCardsPosition;
     public Transform retreatSpawnPoint;
     [Tooltip("Length of line on which player and opponent cards will be located")]
     [Range(0, 10)] public int lineLength;
+    public MenuManager menuManager;
 
     [Header("Debug")]
     [SerializeField] private Deck currentDeck;
 
     [Header("Cards in game")]
     [SerializeField] private List<CardDisplay> playerCardsDisplays;
-    [SerializeField] private List<CardDisplay> opponentCardsDisplays;
     [SerializeField] private Stack<CardDisplay> retreat;
 
     private void Awake()
@@ -119,17 +118,22 @@ public class DeckManager : MonoBehaviour
     {
         GameManager.instance.OnRetreat += () =>
         {
+            Debug.Log($"Был отбой и количество карт у игрока {playerCardsDisplays.Count}");
             if (playerCardsDisplays.Count < 6) AddCardsToPlayer(6 - playerCardsDisplays.Count);
-            if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(6 - opponentCardsDisplays.Count);
         };
-
-        GameManager.instance.OnChangeTurn += (turn) => OnNextTurn(turn);
+        GameManager.instance.OnTake += () =>
+        {
+            foreach (CardSlot cardSlot in CardSlotsHandler.instance.GetClosedSlots())
+            {
+                cardSlot.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 15f / 255);
+            }
+            AddCardsToPlayerFromTable();       
+        };
     }
 
     public void SpawnDeck()
     {
         playerCardsDisplays = new List<CardDisplay>();
-        opponentCardsDisplays = new List<CardDisplay>();
         retreat = new Stack<CardDisplay>();
 
         // Create deck
@@ -171,27 +175,18 @@ public class DeckManager : MonoBehaviour
         for (int i = 0; i < numberOfCards; i++)
         {
             CardDisplay cardDisplay = currentDeck.TakeCard();
-            TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 0, 0));
-            playerCardsDisplays.Add(cardDisplay);
-            RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
-
-    public void AddCardsToOpponent(int numberOfCards)
-    {
-        instance.StartCoroutine(instance.GiveCardsToOpponent(numberOfCards));
-    }
-
-    private IEnumerator GiveCardsToOpponent(int numberOfCards)
-    {
-        for (int i = 0; i < numberOfCards; i++)
-        {
-            CardDisplay cardDisplay = currentDeck.TakeCard();
-            TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 180, 0));
-            opponentCardsDisplays.Add(cardDisplay);
-            RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
-            yield return new WaitForSeconds(0.1f);
+            if(cardDisplay != null)
+            {
+                AudioManager.PlaySound("cardPlace1");
+                TransformHelper.SmoothRotate(cardDisplay.transform, new Vector3(0, 0, 0));
+                playerCardsDisplays.Add(cardDisplay);
+                RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
+                yield return new WaitForSeconds(0.1f);
+            }
+            else
+            {
+                menuManager.ActivateEndMenu();
+            }
         }
     }
 
@@ -199,14 +194,6 @@ public class DeckManager : MonoBehaviour
     {
         playerCardsDisplays.Remove(cardDisplay);
         RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
-        GameManager.instance.NextTurn();
-    }
-
-    public void DeleteFromOpponent(CardDisplay cardDisplay)
-    {
-        opponentCardsDisplays.Remove(cardDisplay);
-        RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
-        GameManager.instance.NextTurn();
     }
 
     public bool IsPlayerCard(CardDisplay cardDisplay)
@@ -230,69 +217,23 @@ public class DeckManager : MonoBehaviour
         return currentDeck.GetTrump();
     }
 
-    public void GiveCardsToPlayerFromTable()
+    public void AddCardsToPlayerFromTable()
+    {
+        StartCoroutine(GiveCardsToPlayerFromTable());
+    }
+
+    private IEnumerator GiveCardsToPlayerFromTable()
     {
         List<CardSlot> cardSlots = CardSlotsHandler.instance.GetClosedSlots();
 
         foreach (CardSlot cardSlot in cardSlots)
         {
+            AudioManager.PlaySound("cardPlace3");
             TransformHelper.SmoothRotate(cardSlot.CardDisplay.transform, new Vector3(0, 0, 0));
             playerCardsDisplays.Add(cardSlot.CardDisplay);
             RebuildCardDisplays(playerCardsDisplays, playerCardsPosition.position, lineLength);
             cardSlot.CardDisplay = null;
-        }
-
-        if (playerCardsDisplays.Count < 6) AddCardsToPlayer(6 - playerCardsDisplays.Count);
-        if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(6 - opponentCardsDisplays.Count);
-    }
-
-    public void GiveCardsToOpponentFromTable()
-    {
-        List<CardSlot> cardSlots = CardSlotsHandler.instance.GetClosedSlots();
-
-        foreach (CardSlot cardSlot in cardSlots)
-        {
-            TransformHelper.SmoothRotate(cardSlot.CardDisplay.transform, new Vector3(0, 180, 0));
-            opponentCardsDisplays.Add(cardSlot.CardDisplay);
-            RebuildCardDisplays(opponentCardsDisplays, opponentCardsPosition.position, lineLength);
-            cardSlot.CardDisplay = null;
-        }
-
-        if (playerCardsDisplays.Count < 6) AddCardsToPlayer(6 - playerCardsDisplays.Count);
-        if (opponentCardsDisplays.Count < 6) AddCardsToOpponent(6 - opponentCardsDisplays.Count);
-    }
-
-    private void OnNextTurn(Turns turn)
-    {
-        if (turn == Turns.Bot)
-        {
-            Debug.Log("Щя будет бот ходить или забирать");
-            var cardSlot = CardSlotsHandler.instance.GetFirstFree();
-
-            if(cardSlot != null)
-            {
-                for (int i = 0; i < opponentCardsDisplays.Count; i++)
-                {
-                    if (cardSlot.CanPutCard(opponentCardsDisplays[i]))
-                    {
-                        cardSlot.CardDisplay = opponentCardsDisplays[i];
-                        Debug.Log("cardSlot.transform.position: " + cardSlot.transform.position);
-                        Debug.Log("cardSlot.name: " + cardSlot.name);
-                        TransformHelper.SmoothMove(opponentCardsDisplays[i].transform, cardSlot.transform.position);
-                        TransformHelper.SmoothRotate(opponentCardsDisplays[i].transform, new Vector3(0, 0, 0));
-                        DeleteFromOpponent(opponentCardsDisplays[i]);
-                        break;
-                    }
-                    if (i == opponentCardsDisplays.Count - 1)
-                    {
-                        Debug.Log("У меня нет чем ходить бро, я забираю карты:(");
-                        GiveCardsToOpponentFromTable();
-                        GameManager.instance.NextTurn();
-                    }
-                }
-            }
-
-          
+            yield return new WaitForSeconds(0.1f);
         }
     }
 }

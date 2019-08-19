@@ -27,7 +27,7 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
 
     public void OnDrag(PointerEventData eventData)
     {
-        if(!currentCardDisplay.OnSlot && GameManager.instance.CurrentTurn == Turns.Player && DeckManager.instance.IsPlayerCard(currentCardDisplay))
+        if(!currentCardDisplay.OnSlot && DeckManager.instance.IsPlayerCard(currentCardDisplay))
         {
             currentTouchCoord = Camera.main.ScreenToWorldPoint(eventData.position);
             transform.position += currentTouchCoord - lastTouchCoord;
@@ -36,11 +36,13 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        if(!currentCardDisplay.OnSlot && GameManager.instance.CurrentTurn == Turns.Player && nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
+        if(!currentCardDisplay.OnSlot && nearestCardSlot != null && nearestCardSlot.CanPutCard(currentCardDisplay))
         {
-            nearestCardSlot.CardDisplay = currentCardDisplay;
-            TransformHelper.SmoothMove(currentCardDisplay.transform, nearestCardSlot.transform.position);
             DeckManager.instance.DeleteFromPlayer(currentCardDisplay);
+            nearestCardSlot.CardDisplay = currentCardDisplay;
+            nearestCardSlot.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 0);
+            AudioManager.PlaySound("cardPlace2");
+            TransformHelper.SmoothMove(currentCardDisplay.transform, nearestCardSlot.transform.position);
         }
         else
         {
@@ -53,13 +55,16 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
         if (!currentCardDisplay.OnSlot && collision.tag == "CardSlot" && collision.GetComponent<CardSlot>().CanPutCard(currentCardDisplay))
         {
             nearestCardSlot = collision.GetComponent<CardSlot>();
+            nearestCardSlot.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 100f / 255);
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.tag == "CardSlot")
-        {
+        if (collision.tag == "CardSlot" && nearestCardSlot != null && collision.GetComponent<CardSlot>() == nearestCardSlot)
+        { 
+            Debug.Log($"Вышел {collision.name}");
+            nearestCardSlot.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 15f / 255);
             nearestCardSlot = null;
         }
     }

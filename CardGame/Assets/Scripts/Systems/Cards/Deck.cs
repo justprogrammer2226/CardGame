@@ -7,12 +7,14 @@ public class Deck : MonoBehaviour
 {
     private Stack<CardDisplay> deck;
     private CardDisplay trumpCard;
+    private CardSuits trumpSuit;
 
     public Deck(List<Card> cards, GameObject cardPrefab, Transform deckSpawnPoint)
     {
         ShuffleCards(cards);
         SpawnCards(cards, cardPrefab, deckSpawnPoint);
         trumpCard = deck.Pop();
+        trumpSuit = trumpCard.card.Suit;
     }
 
     private void ShuffleCards(List<Card> cards)
@@ -40,7 +42,7 @@ public class Deck : MonoBehaviour
 
     public CardSuits GetTrump()
     {
-        return GetTrumpCard().card.Suit;
+        return trumpSuit;
     }
 
     public CardDisplay GetTrumpCard()
@@ -55,6 +57,19 @@ public class Deck : MonoBehaviour
 
     public CardDisplay TakeCard()
     {
-        return deck.Pop();
+        if (deck.Count != 0)
+        {
+            return deck.Pop();
+        }
+        else if (deck.Count == 0 && trumpCard != null)
+        {
+            CardDisplay temp = trumpCard;
+            trumpCard = null;
+            return temp;
+        }
+        else
+        {
+            return null;
+        }
     }
 }
