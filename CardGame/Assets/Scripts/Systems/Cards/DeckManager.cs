@@ -118,7 +118,6 @@ public class DeckManager : MonoBehaviour
     {
         GameManager.instance.OnRetreat += () =>
         {
-            Debug.Log($"Был отбой и количество карт у игрока {playerCardsDisplays.Count}");
             if (playerCardsDisplays.Count < 6) AddCardsToPlayer(6 - playerCardsDisplays.Count);
         };
         GameManager.instance.OnTake += () =>

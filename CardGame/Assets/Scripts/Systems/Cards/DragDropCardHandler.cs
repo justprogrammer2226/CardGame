@@ -63,7 +63,6 @@ public class DragDropCardHandler : MonoBehaviour, IDragHandler, IEndDragHandler,
     {
         if (collision.tag == "CardSlot" && nearestCardSlot != null && collision.GetComponent<CardSlot>() == nearestCardSlot)
         { 
-            Debug.Log($"Вышел {collision.name}");
             nearestCardSlot.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 15f / 255);
             nearestCardSlot = null;
         }

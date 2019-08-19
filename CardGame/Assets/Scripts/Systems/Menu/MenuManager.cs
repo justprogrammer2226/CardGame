@@ -36,19 +36,19 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        if (PlayerPrefs.HasKey("sfxVolume"))
-        {
-            sfxSlider.value = AudioManager.Instance.GetSfxVolume();
-        }
-
-        sfxSlider.onValueChanged.AddListener((value) => SetSfxVolume(value));
-        _lastSfxVolume = sfxSlider.value;
-
         if (SceneManager.GetActiveScene().buildIndex == 0)
         {
             _startMenu.SetActive(true);
             _settingsMenu.SetActive(false);
             _lastActiveMenu = _startMenu;
+            if (PlayerPrefs.HasKey("sfxVolume"))
+            {
+                sfxSlider.value = AudioManager.Instance.GetSfxVolume();
+            }
+
+            sfxSlider.onValueChanged.AddListener((value) => SetSfxVolume(value));
+            _lastSfxVolume = sfxSlider.value;
+
         }
         else if (SceneManager.GetActiveScene().buildIndex == 1)
         {
